@@ -1,23 +1,121 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35303.130
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "gameA", "gameA\gameA.pyproj", "{9AFF022D-5BD5-4A6C-B8C3-BEB2F3101E78}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9AFF022D-5BD5-4A6C-B8C3-BEB2F3101E78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9AFF022D-5BD5-4A6C-B8C3-BEB2F3101E78}.Release|Any CPU.ActiveCfg = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {C871E38F-8032-455E-B5FF-6CEBD032F034}
-	EndGlobalSection
-EndGlobal
+# coding=windows-1251
+import random
+
+# Списки
+inventory = []  # Инвентарь 
+available_actions = ["осмотреться", "громко мяукать", "осмотреть предмет", "выкинуть предмет"]  # Доступные действия
+
+# Кортежи
+level_parameters = (
+    (1, "Спальня", "разбудить хозяина", "Вы находитесь в спальне. Солнце давно уже встало, пора завтракать, а хозяин всё ещё мирно посапывает. Нужно найти что-нибудь, чем можно его разбудить."),  # (номер уровня, название, задание, описание)
+    (2, "Кухня", "греметь миской", "После спальни, вы отправляетесь на кухню, но у хозяина другие планы, он взял и ушёл в ванную. Нужно привлечь внимание обнаглевшего. Самое время найти миску и хорошенько погреметь ею."),
+    (3, "Коридор", "погрызть тапки", "После завтрака вы отправляетесь в коридор. Хозяин не покупает новые игрушки целый месяц, и неважно что старых накопилась целая коробка, они все уже надоели. Надо начать грызть его тапки, как напоминание, что пора покупать новые игрушки.")
+)
+
+# Множества
+completed_quests = set()  # Отслеживание выполненных заданий
+
+# Словари
+item_descriptions = {
+    "попрыгунчик": "Маленький игрушечный мячик, которым весело играть.",
+    "мышка": "Игрушечная мышка, которая тихо шуршит.",
+    "носок": "Обычный носок, хозяин вечно бросает вещи где попало.",
+    "миска": "Железная миска, отличная вещь чтобы пошуметь.",
+    "тапки": "Мягкие тапки хозяина, которые можно погрызть."
+}
+
+levels = {
+    1: {"name": "Спальня", "task": "разбудить хозяина"},
+    2: {"name": "Кухня", "task": "греметь миской"},
+    3: {"name": "Коридор", "task": "погрызть тапки"}
+}
+
+player_stats = {
+    "имя": "Мурлыка",
+    "настроение": 100,
+    "уровень": 1,
+}
+
+
+# Функции 
+def show_status():
+    print(f"\nИмя: {player_stats['имя']}, Настроение: {player_stats['настроение']}, Уровень: {player_stats['уровень']}")
+    print(f"Инвентарь: {inventory}")
+    print(f"Задание на уровне: {levels[player_stats['уровень']]['task']}")
+
+def show_level_description():
+    current_level = player_stats['уровень']
+    if current_level <= len(level_parameters):
+        description = level_parameters[current_level - 1][3]  # Описание уровня
+        print(f"\n{description}")  
+
+def perform_action(action):
+    current_level = player_stats['уровень']  # Текущий уровень
+    if action == "осмотреться":
+        print("Мурлыка осматривается и находит предмет!")
+        # Поиск предметов в зависимости от текущего уровня
+        found_items = ["попрыгунчик", "мышка", "носок"]  # Общие предметы, которые можно найти на всех уровнях
+        if current_level == 2:  # Если на кухне
+            found_items.append("миска")  # Добавляем миску
+        elif current_level == 3:  # Если в коридоре
+            found_items.append("тапки")  # Добавляем тапки
+        toy = random.choice(found_items)  # Случайный выбор предмета из доступных
+        inventory.append(toy)
+        print(f"Мурлыка взял {toy}.")
+    elif action == "громко мяукать":
+            print("Мурлыка громко мяукает, но хозяин не обращает внимания.")
+    elif action == "осмотреть предмет":
+        if inventory:
+            item = input("Какой предмет вы хотите осмотреть? ").strip().lower()
+            if item in inventory:
+                description = item_descriptions.get(item, "Описание отсутствует.")
+                print(f"Вы осматриваете {item}: {description}")
+            else:
+                print("У вас нет такого предмета в инвентаре.")
+        else:
+            print("Инвентарь пуст.")
+    elif action == "выкинуть предмет":
+        if inventory:
+            item = inventory.pop(0)
+            print(f"Мурлыка выкидывает {item}.")
+        else:
+            print("Инвентарь пуст.")
+
+def check_level_completion():
+    current_task = levels[player_stats['уровень']]['task']
+    if current_task == "разбудить хозяина" and "попрыгунчик" in inventory:
+        print("\nМурлыка пинает попрыгунчик лапой, попрыгунчик отскакиевает и попадает прямо в спящего хозяина. Хозяин просыпается!")
+        completed_quests.add(levels[player_stats['уровень']]['name'])
+        player_stats['уровень'] += 1
+        inventory.clear()
+    elif current_task == "греметь миской" and "миска" in inventory:
+        print("\nМурлыка гремит миской и привлекает внимание хозяина!")
+        completed_quests.add(levels[player_stats['уровень']]['name'])
+        player_stats['уровень'] += 1
+        inventory.clear()
+    elif current_task == "погрызть тапки" and "тапки" in inventory:
+        print("\nМурлыка погрыз тапки хозяина и доволен!")
+        completed_quests.add(levels[player_stats['уровень']]['name'])
+        player_stats['уровень'] += 1
+        inventory.clear()
+    if player_stats['уровень'] > len(levels):
+        print("Мурлыка справился с запланированными делами, самое время сладко вздремнуть в мягонькой лежанке! Игра окончена.")
+        return True
+    return False
+
+# Основной игровой цикл
+def main():
+    while True:
+        show_status()
+        show_level_description()  # Описание уровня 
+        action = input("\nВыберите действие (осмотреться, громко мяукать, осмотреть предмет, выкинуть предмет): ").strip().lower()
+        if action in available_actions:
+            perform_action(action)
+            if check_level_completion():
+                break  # Завершение игры, если все уровни пройдены
+        else:
+            print("Неверное действие. Пожалуйста, выберите одно из доступных действий.")
+
+# Запуск игры
+if __name__ == "__main__":
+    main()
